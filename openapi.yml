@@ -1,0 +1,184 @@
+openapi: '3.0.3'
+info:
+  title: Stealth Trade api
+  version: '0.0.1'
+servers:
+  - url: https://StealthTrade.exchange/v1
+
+components:
+  schemas:
+    JSONMessage: 
+      type: object
+      properties:
+        message:
+          type: string
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+        picture:
+          type: string
+          format: url
+        name:
+          type: string
+    Order: 
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        amount:
+          type: integer
+          format: double
+          minimum: 0
+        premium:
+          type: integer
+          format: double
+          minimum: 0
+          maximum: 100
+        bid:
+          type: boolean
+        currency:
+          type: string
+    OrderId: 
+      type: integer
+    OrderArray:
+      type: array
+      properties:
+        item:
+          type: object
+          properties:
+            schema:
+              $ref: "#/components/schemas/Order"
+paths:
+  /escrow/start:
+    post: 
+      description: "start the escrow"
+      responses:
+        '200': 
+          description: "Successfully started an escrow"
+  /escrow/{id}:
+    get: 
+      description: "get the escrow status"
+      parameters:
+        - name: id
+          in: path
+          description: id of the escrow to check the status
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200': 
+          description: "Successfully returning the status of the escrow"
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: 
+                    type: string
+  /token/generate:
+    post: 
+      description: "generate a token for the user"
+      responses:
+        '200': 
+          description: "succesfully generated a token"
+          content:
+            application/json:
+              schema:
+                properties:
+                  token:
+                    type: string 
+                    example: "s0m3th1ngl1k3th1sw1th30char"
+  /profile/update:
+    put: 
+      description: "regenerate the profile picture and user name"
+      responses:
+        '200': 
+          description: "successfully regenerate the user profile and picture"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+  /orders:
+    get:
+      description: "Get the list of orders"
+      parameters:
+        - name: sort
+          in: query
+          schema:
+            type: string
+        - name: offset
+          in: query 
+          schema:
+            type: integer
+            format: integer 
+            example: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer 
+            format: integer
+            minimum: 1
+            maximum: 50
+            example: 10
+      responses:
+        '200':
+          description: "list of orders"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderArray"
+    post:
+      description: "Create an order"
+      parameters: []
+      requestBody: 
+        description: "Order details"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Order"
+      responses:
+        "201":
+          description: "Object accepted"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONMessage"
+  /orders/{order-id}:
+    get:
+      description: 'Get the list of the orders'
+      parameters:
+      - name: order-id
+        description: ID of the order
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+    delete:
+      description: "Delete the order with id"
+      parameters:
+        - name: order-id
+          description: ID of the order
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200": 
+          description: Sucessfully deleted the object with the uuid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONMessage"
