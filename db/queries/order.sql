@@ -10,3 +10,5 @@ UPDATE orders SET amount = $1, currency = $2, created_at = $3, expiry_at = $4, p
 DELETE FROM orders WHERE id = $1;
 -- name: CountOrders :one
 SELECT COUNT(*) FROM orders;
+-- name: CreateTrade :one
+-- name: DeleteTrade :exec

@@ -45,21 +45,70 @@ components:
       type: integer
     OrderArray:
       type: array
-      properties:
-        item:
-          type: object
-          properties:
-            schema:
-              $ref: "#/components/schemas/Order"
+      items:
+        type: object
+        properties:
+          schema:
+            $ref: "#/components/schemas/Order"
 paths:
-  /escrow/start:
+  /orders/{order-id}/trade:
+    post:
+      tags:
+        - orders
+        - trade 
+      responses:
+        '200':
+          description: "successfully created a trade"
+    get: 
+      tags:
+        - orders
+        - trade
+      responses:
+          '200':
+            description: "succesfully retrieved a trade"
+    delete:
+      tags:
+        - orders
+        - trade
+      responses:
+          '200':
+            description: "succesfully deleted a trade"
+  /orders/{order-id}/trade/escrow/dispute:
     post: 
+      tags: 
+       - orders
+       - trade
+       - escrow
+       - dispute
+      description: "Raise a dispute"
+      responses:
+        '201':
+          description: "Successfully raised a dispute"
+    delete:
+      tags: 
+        - orders
+        - trade 
+        - escrow
+        - dispute
+      description: "Succesfully delete the dispute"
+      responses:
+        '200':
+          description: "Succesfully resolved the dispute"
+  /orders/{order-id}/trade/escrow:
+    post: 
+      tags:
+        - orders
+        - trade
+        - escrow
       description: "start the escrow"
       responses:
-        '200': 
+        '201': 
           description: "Successfully started an escrow"
-  /escrow/{id}:
     get: 
+      tags:
+        - orders
+        - trade
+        - escrow
       description: "get the escrow status"
       parameters:
         - name: id
@@ -78,11 +127,45 @@ paths:
                 properties:
                   status: 
                     type: string
+        '400':
+          description: "Bad Request"
+        '401':
+          description: ""
+        '404': 
+          description: ""
+        
+    delete:
+      tags:
+        - orders
+        - trade
+        - escrow
+      description: "Delete the escrow"
+      parameters:
+        - name: id
+          in: path
+          description: id of the escrow to delete
+          required: true
+          schema: 
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "return the message of deletion"
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/JSONMessage"
+        '400':
+          description: "Bad request"
+        '402':
+          description: "invalid api key"
+        '404': 
+          description: "escrow not found"
   /token/generate:
     post: 
       description: "generate a token for the user"
       responses:
-        '200': 
+        '201': 
           description: "succesfully generated a token"
           content:
             application/json:
@@ -91,18 +174,10 @@ paths:
                   token:
                     type: string 
                     example: "s0m3th1ngl1k3th1sw1th30char"
-  /profile/update:
-    put: 
-      description: "regenerate the profile picture and user name"
-      responses:
-        '200': 
-          description: "successfully regenerate the user profile and picture"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Account"
   /orders:
     get:
+      tags:
+        - "orders"
       description: "Get the list of orders"
       parameters:
         - name: sort
@@ -131,6 +206,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/OrderArray"
     post:
+      tags:
+      - "orders"
       description: "Create an order"
       parameters: []
       requestBody: 
@@ -149,6 +226,8 @@ paths:
                 $ref: "#/components/schemas/JSONMessage"
   /orders/{order-id}:
     get:
+      tags:
+        - "orders"
       description: 'Get the list of the orders'
       parameters:
       - name: order-id
@@ -166,6 +245,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Order"
     delete:
+      tags:
+        - "orders"
       description: "Delete the order with id"
       parameters:
         - name: order-id
