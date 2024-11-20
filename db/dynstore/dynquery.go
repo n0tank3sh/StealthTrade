@@ -25,7 +25,7 @@ type GetOrderByFieldParam struct {
 	PageEnd   int
 }
 
-func (dynstore *Dynstore) GetOrderByField(param GetOrderByFieldParam) ([]store.Order, error) {
+func (dynstore *Dynstore) GetOrderByField(param GetOrderByFieldParam) ([]store.Position, error) {
 	orderby := ""
 	if param.Ascending {
 		orderby = "ASC"
@@ -37,7 +37,7 @@ func (dynstore *Dynstore) GetOrderByField(param GetOrderByFieldParam) ([]store.O
 	if err != nil {
 		return nil, err
 	}
-	var orders []store.Order
+	var orders []store.Position
 	err = rows.Scan(&orders)
 	if err != nil {
 		return nil, err

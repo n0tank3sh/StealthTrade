@@ -16,13 +16,6 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// Account defines model for Account.
-type Account struct {
-	Id      *string `json:"id,omitempty"`
-	Name    *string `json:"name,omitempty"`
-	Picture *string `json:"picture,omitempty"`
-}
-
 // JSONMessage defines model for JSONMessage.
 type JSONMessage struct {
 	Message *string `json:"message,omitempty"`
@@ -38,7 +31,9 @@ type Order struct {
 }
 
 // OrderArray defines model for OrderArray.
-type OrderArray = []interface{}
+type OrderArray = []struct {
+	Schema *Order `json:"schema,omitempty"`
+}
 
 // GetOrdersParams defines parameters for GetOrders.
 type GetOrdersParams struct {
@@ -49,9 +44,6 @@ type GetOrdersParams struct {
 
 // PostOrdersJSONRequestBody defines body for PostOrders for application/json ContentType.
 type PostOrdersJSONRequestBody = Order
-
-// PutOrdersOrderIdJSONRequestBody defines body for PutOrdersOrderId for application/json ContentType.
-type PutOrdersOrderIdJSONRequestBody = Order
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -68,11 +60,29 @@ type ServerInterface interface {
 	// (GET /orders/{order-id})
 	GetOrdersOrderId(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID)
 
-	// (PUT /orders/{order-id})
-	PutOrdersOrderId(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID)
+	// (DELETE /orders/{order-id}/trade)
+	DeleteOrdersOrderIdTrade(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID)
 
-	// (PUT /profile/update)
-	PutProfileUpdate(w http.ResponseWriter, r *http.Request)
+	// (GET /orders/{order-id}/trade)
+	GetOrdersOrderIdTrade(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID)
+
+	// (POST /orders/{order-id}/trade)
+	PostOrdersOrderIdTrade(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID)
+
+	// (DELETE /orders/{order-id}/trade/escrow)
+	DeleteOrdersOrderIdTradeEscrow(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID)
+
+	// (GET /orders/{order-id}/trade/escrow)
+	GetOrdersOrderIdTradeEscrow(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID)
+
+	// (POST /orders/{order-id}/trade/escrow)
+	PostOrdersOrderIdTradeEscrow(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID)
+
+	// (DELETE /orders/{order-id}/trade/escrow/dispute)
+	DeleteOrdersOrderIdTradeEscrowDispute(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID)
+
+	// (POST /orders/{order-id}/trade/escrow/dispute)
+	PostOrdersOrderIdTradeEscrowDispute(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID)
 
 	// (POST /token/generate)
 	PostTokenGenerate(w http.ResponseWriter, r *http.Request)
@@ -194,8 +204,8 @@ func (siw *ServerInterfaceWrapper) GetOrdersOrderId(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r)
 }
 
-// PutOrdersOrderId operation middleware
-func (siw *ServerInterfaceWrapper) PutOrdersOrderId(w http.ResponseWriter, r *http.Request) {
+// DeleteOrdersOrderIdTrade operation middleware
+func (siw *ServerInterfaceWrapper) DeleteOrdersOrderIdTrade(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -209,7 +219,7 @@ func (siw *ServerInterfaceWrapper) PutOrdersOrderId(w http.ResponseWriter, r *ht
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PutOrdersOrderId(w, r, orderId)
+		siw.Handler.DeleteOrdersOrderIdTrade(w, r, orderId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -219,11 +229,172 @@ func (siw *ServerInterfaceWrapper) PutOrdersOrderId(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r)
 }
 
-// PutProfileUpdate operation middleware
-func (siw *ServerInterfaceWrapper) PutProfileUpdate(w http.ResponseWriter, r *http.Request) {
+// GetOrdersOrderIdTrade operation middleware
+func (siw *ServerInterfaceWrapper) GetOrdersOrderIdTrade(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "order-id" -------------
+	var orderId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "order-id", r.PathValue("order-id"), &orderId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "order-id", Err: err})
+		return
+	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PutProfileUpdate(w, r)
+		siw.Handler.GetOrdersOrderIdTrade(w, r, orderId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PostOrdersOrderIdTrade operation middleware
+func (siw *ServerInterfaceWrapper) PostOrdersOrderIdTrade(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "order-id" -------------
+	var orderId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "order-id", r.PathValue("order-id"), &orderId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "order-id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostOrdersOrderIdTrade(w, r, orderId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteOrdersOrderIdTradeEscrow operation middleware
+func (siw *ServerInterfaceWrapper) DeleteOrdersOrderIdTradeEscrow(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "order-id" -------------
+	var orderId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "order-id", r.PathValue("order-id"), &orderId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "order-id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteOrdersOrderIdTradeEscrow(w, r, orderId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetOrdersOrderIdTradeEscrow operation middleware
+func (siw *ServerInterfaceWrapper) GetOrdersOrderIdTradeEscrow(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "order-id" -------------
+	var orderId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "order-id", r.PathValue("order-id"), &orderId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "order-id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetOrdersOrderIdTradeEscrow(w, r, orderId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PostOrdersOrderIdTradeEscrow operation middleware
+func (siw *ServerInterfaceWrapper) PostOrdersOrderIdTradeEscrow(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "order-id" -------------
+	var orderId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "order-id", r.PathValue("order-id"), &orderId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "order-id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostOrdersOrderIdTradeEscrow(w, r, orderId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteOrdersOrderIdTradeEscrowDispute operation middleware
+func (siw *ServerInterfaceWrapper) DeleteOrdersOrderIdTradeEscrowDispute(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "order-id" -------------
+	var orderId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "order-id", r.PathValue("order-id"), &orderId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "order-id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteOrdersOrderIdTradeEscrowDispute(w, r, orderId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PostOrdersOrderIdTradeEscrowDispute operation middleware
+func (siw *ServerInterfaceWrapper) PostOrdersOrderIdTradeEscrowDispute(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "order-id" -------------
+	var orderId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "order-id", r.PathValue("order-id"), &orderId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "order-id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostOrdersOrderIdTradeEscrowDispute(w, r, orderId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -371,8 +542,14 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("POST "+options.BaseURL+"/orders", wrapper.PostOrders)
 	m.HandleFunc("DELETE "+options.BaseURL+"/orders/{order-id}", wrapper.DeleteOrdersOrderId)
 	m.HandleFunc("GET "+options.BaseURL+"/orders/{order-id}", wrapper.GetOrdersOrderId)
-	m.HandleFunc("PUT "+options.BaseURL+"/orders/{order-id}", wrapper.PutOrdersOrderId)
-	m.HandleFunc("PUT "+options.BaseURL+"/profile/update", wrapper.PutProfileUpdate)
+	m.HandleFunc("DELETE "+options.BaseURL+"/orders/{order-id}/trade", wrapper.DeleteOrdersOrderIdTrade)
+	m.HandleFunc("GET "+options.BaseURL+"/orders/{order-id}/trade", wrapper.GetOrdersOrderIdTrade)
+	m.HandleFunc("POST "+options.BaseURL+"/orders/{order-id}/trade", wrapper.PostOrdersOrderIdTrade)
+	m.HandleFunc("DELETE "+options.BaseURL+"/orders/{order-id}/trade/escrow", wrapper.DeleteOrdersOrderIdTradeEscrow)
+	m.HandleFunc("GET "+options.BaseURL+"/orders/{order-id}/trade/escrow", wrapper.GetOrdersOrderIdTradeEscrow)
+	m.HandleFunc("POST "+options.BaseURL+"/orders/{order-id}/trade/escrow", wrapper.PostOrdersOrderIdTradeEscrow)
+	m.HandleFunc("DELETE "+options.BaseURL+"/orders/{order-id}/trade/escrow/dispute", wrapper.DeleteOrdersOrderIdTradeEscrowDispute)
+	m.HandleFunc("POST "+options.BaseURL+"/orders/{order-id}/trade/escrow/dispute", wrapper.PostOrdersOrderIdTradeEscrowDispute)
 	m.HandleFunc("POST "+options.BaseURL+"/token/generate", wrapper.PostTokenGenerate)
 
 	return m
@@ -446,38 +623,184 @@ func (response GetOrdersOrderId200JSONResponse) VisitGetOrdersOrderIdResponse(w 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PutOrdersOrderIdRequestObject struct {
+type DeleteOrdersOrderIdTradeRequestObject struct {
 	OrderId openapi_types.UUID `json:"order-id"`
-	Body    *PutOrdersOrderIdJSONRequestBody
 }
 
-type PutOrdersOrderIdResponseObject interface {
-	VisitPutOrdersOrderIdResponse(w http.ResponseWriter) error
+type DeleteOrdersOrderIdTradeResponseObject interface {
+	VisitDeleteOrdersOrderIdTradeResponse(w http.ResponseWriter) error
 }
 
-type PutOrdersOrderId200JSONResponse JSONMessage
+type DeleteOrdersOrderIdTrade200Response struct {
+}
 
-func (response PutOrdersOrderId200JSONResponse) VisitPutOrdersOrderIdResponse(w http.ResponseWriter) error {
+func (response DeleteOrdersOrderIdTrade200Response) VisitDeleteOrdersOrderIdTradeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type GetOrdersOrderIdTradeRequestObject struct {
+	OrderId openapi_types.UUID `json:"order-id"`
+}
+
+type GetOrdersOrderIdTradeResponseObject interface {
+	VisitGetOrdersOrderIdTradeResponse(w http.ResponseWriter) error
+}
+
+type GetOrdersOrderIdTrade200Response struct {
+}
+
+func (response GetOrdersOrderIdTrade200Response) VisitGetOrdersOrderIdTradeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type PostOrdersOrderIdTradeRequestObject struct {
+	OrderId openapi_types.UUID `json:"order-id"`
+}
+
+type PostOrdersOrderIdTradeResponseObject interface {
+	VisitPostOrdersOrderIdTradeResponse(w http.ResponseWriter) error
+}
+
+type PostOrdersOrderIdTrade200Response struct {
+}
+
+func (response PostOrdersOrderIdTrade200Response) VisitPostOrdersOrderIdTradeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type DeleteOrdersOrderIdTradeEscrowRequestObject struct {
+	OrderId openapi_types.UUID `json:"order-id"`
+}
+
+type DeleteOrdersOrderIdTradeEscrowResponseObject interface {
+	VisitDeleteOrdersOrderIdTradeEscrowResponse(w http.ResponseWriter) error
+}
+
+type DeleteOrdersOrderIdTradeEscrow200JSONResponse JSONMessage
+
+func (response DeleteOrdersOrderIdTradeEscrow200JSONResponse) VisitDeleteOrdersOrderIdTradeEscrowResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PutProfileUpdateRequestObject struct {
+type DeleteOrdersOrderIdTradeEscrow400Response struct {
 }
 
-type PutProfileUpdateResponseObject interface {
-	VisitPutProfileUpdateResponse(w http.ResponseWriter) error
+func (response DeleteOrdersOrderIdTradeEscrow400Response) VisitDeleteOrdersOrderIdTradeEscrowResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
 }
 
-type PutProfileUpdate200JSONResponse Account
+type DeleteOrdersOrderIdTradeEscrow402Response struct {
+}
 
-func (response PutProfileUpdate200JSONResponse) VisitPutProfileUpdateResponse(w http.ResponseWriter) error {
+func (response DeleteOrdersOrderIdTradeEscrow402Response) VisitDeleteOrdersOrderIdTradeEscrowResponse(w http.ResponseWriter) error {
+	w.WriteHeader(402)
+	return nil
+}
+
+type DeleteOrdersOrderIdTradeEscrow404Response struct {
+}
+
+func (response DeleteOrdersOrderIdTradeEscrow404Response) VisitDeleteOrdersOrderIdTradeEscrowResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
+type GetOrdersOrderIdTradeEscrowRequestObject struct {
+	OrderId openapi_types.UUID `json:"order-id"`
+}
+
+type GetOrdersOrderIdTradeEscrowResponseObject interface {
+	VisitGetOrdersOrderIdTradeEscrowResponse(w http.ResponseWriter) error
+}
+
+type GetOrdersOrderIdTradeEscrow200JSONResponse struct {
+	Status *string `json:"status,omitempty"`
+}
+
+func (response GetOrdersOrderIdTradeEscrow200JSONResponse) VisitGetOrdersOrderIdTradeEscrowResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOrdersOrderIdTradeEscrow400Response struct {
+}
+
+func (response GetOrdersOrderIdTradeEscrow400Response) VisitGetOrdersOrderIdTradeEscrowResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type GetOrdersOrderIdTradeEscrow401Response struct {
+}
+
+func (response GetOrdersOrderIdTradeEscrow401Response) VisitGetOrdersOrderIdTradeEscrowResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetOrdersOrderIdTradeEscrow404Response struct {
+}
+
+func (response GetOrdersOrderIdTradeEscrow404Response) VisitGetOrdersOrderIdTradeEscrowResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
+type PostOrdersOrderIdTradeEscrowRequestObject struct {
+	OrderId openapi_types.UUID `json:"order-id"`
+}
+
+type PostOrdersOrderIdTradeEscrowResponseObject interface {
+	VisitPostOrdersOrderIdTradeEscrowResponse(w http.ResponseWriter) error
+}
+
+type PostOrdersOrderIdTradeEscrow201Response struct {
+}
+
+func (response PostOrdersOrderIdTradeEscrow201Response) VisitPostOrdersOrderIdTradeEscrowResponse(w http.ResponseWriter) error {
+	w.WriteHeader(201)
+	return nil
+}
+
+type DeleteOrdersOrderIdTradeEscrowDisputeRequestObject struct {
+	OrderId openapi_types.UUID `json:"order-id"`
+}
+
+type DeleteOrdersOrderIdTradeEscrowDisputeResponseObject interface {
+	VisitDeleteOrdersOrderIdTradeEscrowDisputeResponse(w http.ResponseWriter) error
+}
+
+type DeleteOrdersOrderIdTradeEscrowDispute200Response struct {
+}
+
+func (response DeleteOrdersOrderIdTradeEscrowDispute200Response) VisitDeleteOrdersOrderIdTradeEscrowDisputeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type PostOrdersOrderIdTradeEscrowDisputeRequestObject struct {
+	OrderId openapi_types.UUID `json:"order-id"`
+}
+
+type PostOrdersOrderIdTradeEscrowDisputeResponseObject interface {
+	VisitPostOrdersOrderIdTradeEscrowDisputeResponse(w http.ResponseWriter) error
+}
+
+type PostOrdersOrderIdTradeEscrowDispute201Response struct {
+}
+
+func (response PostOrdersOrderIdTradeEscrowDispute201Response) VisitPostOrdersOrderIdTradeEscrowDisputeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(201)
+	return nil
 }
 
 type PostTokenGenerateRequestObject struct {
@@ -487,13 +810,13 @@ type PostTokenGenerateResponseObject interface {
 	VisitPostTokenGenerateResponse(w http.ResponseWriter) error
 }
 
-type PostTokenGenerate200JSONResponse struct {
+type PostTokenGenerate201JSONResponse struct {
 	Token *string `json:"token,omitempty"`
 }
 
-func (response PostTokenGenerate200JSONResponse) VisitPostTokenGenerateResponse(w http.ResponseWriter) error {
+func (response PostTokenGenerate201JSONResponse) VisitPostTokenGenerateResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(201)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -513,11 +836,29 @@ type StrictServerInterface interface {
 	// (GET /orders/{order-id})
 	GetOrdersOrderId(ctx context.Context, request GetOrdersOrderIdRequestObject) (GetOrdersOrderIdResponseObject, error)
 
-	// (PUT /orders/{order-id})
-	PutOrdersOrderId(ctx context.Context, request PutOrdersOrderIdRequestObject) (PutOrdersOrderIdResponseObject, error)
+	// (DELETE /orders/{order-id}/trade)
+	DeleteOrdersOrderIdTrade(ctx context.Context, request DeleteOrdersOrderIdTradeRequestObject) (DeleteOrdersOrderIdTradeResponseObject, error)
 
-	// (PUT /profile/update)
-	PutProfileUpdate(ctx context.Context, request PutProfileUpdateRequestObject) (PutProfileUpdateResponseObject, error)
+	// (GET /orders/{order-id}/trade)
+	GetOrdersOrderIdTrade(ctx context.Context, request GetOrdersOrderIdTradeRequestObject) (GetOrdersOrderIdTradeResponseObject, error)
+
+	// (POST /orders/{order-id}/trade)
+	PostOrdersOrderIdTrade(ctx context.Context, request PostOrdersOrderIdTradeRequestObject) (PostOrdersOrderIdTradeResponseObject, error)
+
+	// (DELETE /orders/{order-id}/trade/escrow)
+	DeleteOrdersOrderIdTradeEscrow(ctx context.Context, request DeleteOrdersOrderIdTradeEscrowRequestObject) (DeleteOrdersOrderIdTradeEscrowResponseObject, error)
+
+	// (GET /orders/{order-id}/trade/escrow)
+	GetOrdersOrderIdTradeEscrow(ctx context.Context, request GetOrdersOrderIdTradeEscrowRequestObject) (GetOrdersOrderIdTradeEscrowResponseObject, error)
+
+	// (POST /orders/{order-id}/trade/escrow)
+	PostOrdersOrderIdTradeEscrow(ctx context.Context, request PostOrdersOrderIdTradeEscrowRequestObject) (PostOrdersOrderIdTradeEscrowResponseObject, error)
+
+	// (DELETE /orders/{order-id}/trade/escrow/dispute)
+	DeleteOrdersOrderIdTradeEscrowDispute(ctx context.Context, request DeleteOrdersOrderIdTradeEscrowDisputeRequestObject) (DeleteOrdersOrderIdTradeEscrowDisputeResponseObject, error)
+
+	// (POST /orders/{order-id}/trade/escrow/dispute)
+	PostOrdersOrderIdTradeEscrowDispute(ctx context.Context, request PostOrdersOrderIdTradeEscrowDisputeRequestObject) (PostOrdersOrderIdTradeEscrowDisputeResponseObject, error)
 
 	// (POST /token/generate)
 	PostTokenGenerate(ctx context.Context, request PostTokenGenerateRequestObject) (PostTokenGenerateResponseObject, error)
@@ -661,32 +1002,25 @@ func (sh *strictHandler) GetOrdersOrderId(w http.ResponseWriter, r *http.Request
 	}
 }
 
-// PutOrdersOrderId operation middleware
-func (sh *strictHandler) PutOrdersOrderId(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID) {
-	var request PutOrdersOrderIdRequestObject
+// DeleteOrdersOrderIdTrade operation middleware
+func (sh *strictHandler) DeleteOrdersOrderIdTrade(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID) {
+	var request DeleteOrdersOrderIdTradeRequestObject
 
 	request.OrderId = orderId
 
-	var body PutOrdersOrderIdJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
-		return
-	}
-	request.Body = &body
-
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.PutOrdersOrderId(ctx, request.(PutOrdersOrderIdRequestObject))
+		return sh.ssi.DeleteOrdersOrderIdTrade(ctx, request.(DeleteOrdersOrderIdTradeRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PutOrdersOrderId")
+		handler = middleware(handler, "DeleteOrdersOrderIdTrade")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(PutOrdersOrderIdResponseObject); ok {
-		if err := validResponse.VisitPutOrdersOrderIdResponse(w); err != nil {
+	} else if validResponse, ok := response.(DeleteOrdersOrderIdTradeResponseObject); ok {
+		if err := validResponse.VisitDeleteOrdersOrderIdTradeResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -694,23 +1028,181 @@ func (sh *strictHandler) PutOrdersOrderId(w http.ResponseWriter, r *http.Request
 	}
 }
 
-// PutProfileUpdate operation middleware
-func (sh *strictHandler) PutProfileUpdate(w http.ResponseWriter, r *http.Request) {
-	var request PutProfileUpdateRequestObject
+// GetOrdersOrderIdTrade operation middleware
+func (sh *strictHandler) GetOrdersOrderIdTrade(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID) {
+	var request GetOrdersOrderIdTradeRequestObject
+
+	request.OrderId = orderId
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.PutProfileUpdate(ctx, request.(PutProfileUpdateRequestObject))
+		return sh.ssi.GetOrdersOrderIdTrade(ctx, request.(GetOrdersOrderIdTradeRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PutProfileUpdate")
+		handler = middleware(handler, "GetOrdersOrderIdTrade")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(PutProfileUpdateResponseObject); ok {
-		if err := validResponse.VisitPutProfileUpdateResponse(w); err != nil {
+	} else if validResponse, ok := response.(GetOrdersOrderIdTradeResponseObject); ok {
+		if err := validResponse.VisitGetOrdersOrderIdTradeResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostOrdersOrderIdTrade operation middleware
+func (sh *strictHandler) PostOrdersOrderIdTrade(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID) {
+	var request PostOrdersOrderIdTradeRequestObject
+
+	request.OrderId = orderId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PostOrdersOrderIdTrade(ctx, request.(PostOrdersOrderIdTradeRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostOrdersOrderIdTrade")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PostOrdersOrderIdTradeResponseObject); ok {
+		if err := validResponse.VisitPostOrdersOrderIdTradeResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteOrdersOrderIdTradeEscrow operation middleware
+func (sh *strictHandler) DeleteOrdersOrderIdTradeEscrow(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID) {
+	var request DeleteOrdersOrderIdTradeEscrowRequestObject
+
+	request.OrderId = orderId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteOrdersOrderIdTradeEscrow(ctx, request.(DeleteOrdersOrderIdTradeEscrowRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteOrdersOrderIdTradeEscrow")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(DeleteOrdersOrderIdTradeEscrowResponseObject); ok {
+		if err := validResponse.VisitDeleteOrdersOrderIdTradeEscrowResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetOrdersOrderIdTradeEscrow operation middleware
+func (sh *strictHandler) GetOrdersOrderIdTradeEscrow(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID) {
+	var request GetOrdersOrderIdTradeEscrowRequestObject
+
+	request.OrderId = orderId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetOrdersOrderIdTradeEscrow(ctx, request.(GetOrdersOrderIdTradeEscrowRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetOrdersOrderIdTradeEscrow")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetOrdersOrderIdTradeEscrowResponseObject); ok {
+		if err := validResponse.VisitGetOrdersOrderIdTradeEscrowResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostOrdersOrderIdTradeEscrow operation middleware
+func (sh *strictHandler) PostOrdersOrderIdTradeEscrow(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID) {
+	var request PostOrdersOrderIdTradeEscrowRequestObject
+
+	request.OrderId = orderId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PostOrdersOrderIdTradeEscrow(ctx, request.(PostOrdersOrderIdTradeEscrowRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostOrdersOrderIdTradeEscrow")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PostOrdersOrderIdTradeEscrowResponseObject); ok {
+		if err := validResponse.VisitPostOrdersOrderIdTradeEscrowResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteOrdersOrderIdTradeEscrowDispute operation middleware
+func (sh *strictHandler) DeleteOrdersOrderIdTradeEscrowDispute(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID) {
+	var request DeleteOrdersOrderIdTradeEscrowDisputeRequestObject
+
+	request.OrderId = orderId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteOrdersOrderIdTradeEscrowDispute(ctx, request.(DeleteOrdersOrderIdTradeEscrowDisputeRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteOrdersOrderIdTradeEscrowDispute")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(DeleteOrdersOrderIdTradeEscrowDisputeResponseObject); ok {
+		if err := validResponse.VisitDeleteOrdersOrderIdTradeEscrowDisputeResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostOrdersOrderIdTradeEscrowDispute operation middleware
+func (sh *strictHandler) PostOrdersOrderIdTradeEscrowDispute(w http.ResponseWriter, r *http.Request, orderId openapi_types.UUID) {
+	var request PostOrdersOrderIdTradeEscrowDisputeRequestObject
+
+	request.OrderId = orderId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PostOrdersOrderIdTradeEscrowDispute(ctx, request.(PostOrdersOrderIdTradeEscrowDisputeRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostOrdersOrderIdTradeEscrowDispute")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PostOrdersOrderIdTradeEscrowDisputeResponseObject); ok {
+		if err := validResponse.VisitPostOrdersOrderIdTradeEscrowDisputeResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

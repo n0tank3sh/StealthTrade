@@ -6,10 +6,55 @@ package store
 
 import (
 	"database/sql"
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+type Orderstatus string
+
+const (
+	OrderstatusPending   Orderstatus = "pending"
+	OrderstatusCompleted Orderstatus = "completed"
+	OrderstatusCanceled  Orderstatus = "canceled"
+)
+
+func (e *Orderstatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Orderstatus(s)
+	case string:
+		*e = Orderstatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Orderstatus: %T", src)
+	}
+	return nil
+}
+
+type NullOrderstatus struct {
+	Orderstatus Orderstatus
+	Valid       bool // Valid is true if Orderstatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOrderstatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.Orderstatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Orderstatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOrderstatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Orderstatus), nil
+}
 
 type Currency struct {
 	ID      int32
@@ -18,22 +63,36 @@ type Currency struct {
 	Symbol  sql.NullString
 }
 
-type Order struct {
-	ID        uuid.UUID
-	Amount    float64
-	Premium   float64
-	Currency  int32
-	Payment   int32
-	CreatedAt time.Time
-	ExpiryAt  time.Time
+type Ninja struct {
+	ID    uuid.UUID
+	Token string
+	Uname string
+	Dpurl string
 }
 
 type PaymentMethod struct {
 	ID int32
 }
 
-type User struct {
-	Token string
-	Uname string
-	Dpurl string
+type Position struct {
+	ID                 uuid.UUID
+	Amount             float64
+	Premium            float64
+	Currency           int32
+	Payment            int32
+	CreatedAt          time.Time
+	ExpiryAt           time.Time
+	OrderStatus        Orderstatus
+	TradeCreatedAt     sql.NullTime
+	TradeUpdatedAt     sql.NullTime
+	Buyer              uuid.NullUUID
+	Seller             uuid.NullUUID
+	EscrowMultisigAddr sql.NullString
+	EscrowBuyerKey     sql.NullString
+	EscrowSellerKey    sql.NullString
+	EscrowCreatedAt    sql.NullTime
+	EscrowUpdatedAt    sql.NullTime
+	DisputeCreatedAt   sql.NullTime
+	DisputeUpdatedAt   sql.NullTime
+	DisputeReason      sql.NullString
 }

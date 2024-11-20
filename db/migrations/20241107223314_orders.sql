@@ -35,7 +35,7 @@ CREATE TABLE payment_method(
   id SERIAL PRIMARY KEY
 );
 
-CREATE TABLE order(
+CREATE TABLE position(
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), 
   amount DOUBLE PRECISION NOT NULL DEFAULT 0,
   premium DOUBLE PRECISION NOT NULL DEFAULT 0.0,
@@ -44,16 +44,18 @@ CREATE TABLE order(
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   expiry_at TIMESTAMP NOT NULL,
   order_status OrderStatus NOT NULL,
-  taker_id UUID,
   trade_created_at TIMESTAMP,
   trade_updated_at TIMESTAMP,
+  buyer UUID,
+  seller UUID,
   escrow_multisig_addr TEXT,
   escrow_buyer_key TEXT,
-  escrow_sender_key TEXT,
+  escrow_seller_key TEXT,
   escrow_created_at TIMESTAMP,
   escrow_updated_at TIMESTAMP,
   dispute_created_at TIMESTAMP,
   dispute_updated_at TIMESTAMP,
+  dispute_reason TEXT,
   FOREIGN KEY (currency) REFERENCES currencies(id),
   FOREIGN KEY (payment) REFERENCES payment_method(id)
 );

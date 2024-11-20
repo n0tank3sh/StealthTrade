@@ -9,7 +9,11 @@ require (
 	github.com/sqlc-dev/sqlc v1.27.0
 )
 
-require github.com/oapi-codegen/runtime v1.1.1
+require (
+	github.com/monero-ecosystem/go-monero-rpc-client v0.0.0-20240422213115-0895b104dc4c
+	github.com/oapi-codegen/runtime v1.1.1
+	gitlab.com/moneropay/go-monero v1.1.1
+)
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
@@ -26,6 +30,7 @@ require (
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/google/cel-go v0.21.0 // indirect
+	github.com/gorilla/rpc v1.2.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/invopop/yaml v0.3.1 // indirect
@@ -55,7 +60,6 @@ require (
 	github.com/vmware-labs/yaml-jsonpath v0.3.2 // indirect
 	github.com/wasilibs/go-pgquery v0.0.0-20240606042535-c0843d6592cc // indirect
 	github.com/wasilibs/wazero-helpers v0.0.0-20240604052452-61d7981e9a38 // indirect
-	gitlab.com/moneropay/go-monero v1.1.1 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect

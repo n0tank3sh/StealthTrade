@@ -7,13 +7,14 @@ package store
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 const countOrders = `-- name: CountOrders :one
-SELECT COUNT(*) FROM orders
+SELECT COUNT(*) FROM position
 `
 
 func (q *Queries) CountOrders(ctx context.Context) (int64, error) {
@@ -23,8 +24,29 @@ func (q *Queries) CountOrders(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const createTrade = `-- name: CreateTrade :exec
+UPDATE position SET order_status = $1, buyer = $2, seller = $3, trade_created_at = NOW(), trade_update_at = NOW() WHERE id = $4
+`
+
+type CreateTradeParams struct {
+	OrderStatus Orderstatus
+	Buyer       uuid.NullUUID
+	Seller      uuid.NullUUID
+	ID          uuid.UUID
+}
+
+func (q *Queries) CreateTrade(ctx context.Context, arg CreateTradeParams) error {
+	_, err := q.db.ExecContext(ctx, createTrade,
+		arg.OrderStatus,
+		arg.Buyer,
+		arg.Seller,
+		arg.ID,
+	)
+	return err
+}
+
 const deleteOrder = `-- name: DeleteOrder :exec
-DELETE FROM orders WHERE id = $1
+DELETE FROM position WHERE id = $1
 `
 
 func (q *Queries) DeleteOrder(ctx context.Context, id uuid.UUID) error {
@@ -32,13 +54,27 @@ func (q *Queries) DeleteOrder(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
-const getOrder = `-- name: GetOrder :one
-SELECT id, amount, premium, currency, payment, created_at, expiry_at FROM orders WHERE id = $1
+const deleteTrade = `-- name: DeleteTrade :exec
+UPDATE position SET order_status = $1, buyer = NULL, seller = NULL, trade_created_at = NULL, trade_update_at = NULL WHERE id = $2
 `
 
-func (q *Queries) GetOrder(ctx context.Context, id uuid.UUID) (Order, error) {
+type DeleteTradeParams struct {
+	OrderStatus Orderstatus
+	ID          uuid.UUID
+}
+
+func (q *Queries) DeleteTrade(ctx context.Context, arg DeleteTradeParams) error {
+	_, err := q.db.ExecContext(ctx, deleteTrade, arg.OrderStatus, arg.ID)
+	return err
+}
+
+const getOrder = `-- name: GetOrder :one
+SELECT id, amount, premium, currency, payment, created_at, expiry_at, order_status, trade_created_at, trade_updated_at, buyer, seller, escrow_multisig_addr, escrow_buyer_key, escrow_seller_key, escrow_created_at, escrow_updated_at, dispute_created_at, dispute_updated_at, dispute_reason FROM position WHERE id = $1
+`
+
+func (q *Queries) GetOrder(ctx context.Context, id uuid.UUID) (Position, error) {
 	row := q.db.QueryRowContext(ctx, getOrder, id)
-	var i Order
+	var i Position
 	err := row.Scan(
 		&i.ID,
 		&i.Amount,
@@ -47,12 +83,25 @@ func (q *Queries) GetOrder(ctx context.Context, id uuid.UUID) (Order, error) {
 		&i.Payment,
 		&i.CreatedAt,
 		&i.ExpiryAt,
+		&i.OrderStatus,
+		&i.TradeCreatedAt,
+		&i.TradeUpdatedAt,
+		&i.Buyer,
+		&i.Seller,
+		&i.EscrowMultisigAddr,
+		&i.EscrowBuyerKey,
+		&i.EscrowSellerKey,
+		&i.EscrowCreatedAt,
+		&i.EscrowUpdatedAt,
+		&i.DisputeCreatedAt,
+		&i.DisputeUpdatedAt,
+		&i.DisputeReason,
 	)
 	return i, err
 }
 
 const insertOrder = `-- name: InsertOrder :exec
-INSERT INTO orders (amount, currency, created_at, expiry_at, premium, payment) VALUES  ($1, $2, $3, $4, $5, $6) RETURNING id
+INSERT INTO position (amount, currency, created_at, expiry_at, premium, payment) VALUES  ($1, $2, $3, $4, $5, $6) RETURNING id
 `
 
 type InsertOrderParams struct {
@@ -76,8 +125,29 @@ func (q *Queries) InsertOrder(ctx context.Context, arg InsertOrderParams) error 
 	return err
 }
 
+const lockEscrow = `-- name: LockEscrow :exec
+UPDATE position SET order_status = $1, escrow_buyer_key = $2, escrow_seller_key = $3, escrow_created_at = NOW(), escrow_updated_at = NOW(), trade_update_at = NOW() WHERE id = $4
+`
+
+type LockEscrowParams struct {
+	OrderStatus     Orderstatus
+	EscrowBuyerKey  sql.NullString
+	EscrowSellerKey sql.NullString
+	ID              uuid.UUID
+}
+
+func (q *Queries) LockEscrow(ctx context.Context, arg LockEscrowParams) error {
+	_, err := q.db.ExecContext(ctx, lockEscrow,
+		arg.OrderStatus,
+		arg.EscrowBuyerKey,
+		arg.EscrowSellerKey,
+		arg.ID,
+	)
+	return err
+}
+
 const patchOrder = `-- name: PatchOrder :exec
-UPDATE orders SET amount = $1, currency = $2, created_at = $3, expiry_at = $4, premium = $5, payment = $6 WHERE id = $7
+UPDATE position SET amount = $1, currency = $2, created_at = $3, expiry_at = $4, premium = $5, payment = $6 WHERE id = $7
 `
 
 type PatchOrderParams struct {
@@ -103,8 +173,22 @@ func (q *Queries) PatchOrder(ctx context.Context, arg PatchOrderParams) error {
 	return err
 }
 
+const releaseEscrow = `-- name: ReleaseEscrow :exec
+UPDATE position SET order_status = $1, escrow_buyer_key = NULL, escrow_seller_key = NULL, escrow_created_at = NULL, escrow_updated_at = NULL, trade_update_at = NOW() WHERE id = $2
+`
+
+type ReleaseEscrowParams struct {
+	OrderStatus Orderstatus
+	ID          uuid.UUID
+}
+
+func (q *Queries) ReleaseEscrow(ctx context.Context, arg ReleaseEscrowParams) error {
+	_, err := q.db.ExecContext(ctx, releaseEscrow, arg.OrderStatus, arg.ID)
+	return err
+}
+
 const verifyToken = `-- name: VerifyToken :one
-SELECT COUNT(*) FROM users WHERE token = $1
+SELECT COUNT(*) FROM ninja WHERE token = $1
 `
 
 func (q *Queries) VerifyToken(ctx context.Context, token string) (int64, error) {

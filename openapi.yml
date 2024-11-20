@@ -54,42 +54,73 @@ paths:
   /orders/{order-id}/trade:
     post:
       tags:
-        - orders
-        - trade 
+        - trade       
+      parameters:
+      - name: order-id
+        description: ID of the order
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
       responses:
         '200':
           description: "successfully created a trade"
     get: 
       tags:
-        - orders
-        - trade
+        - trade      
+      parameters:
+      - name: order-id
+        description: ID of the order
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
       responses:
           '200':
             description: "succesfully retrieved a trade"
     delete:
       tags:
-        - orders
-        - trade
+        - trade      
+      parameters:
+      - name: order-id
+        description: ID of the order
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
       responses:
           '200':
             description: "succesfully deleted a trade"
   /orders/{order-id}/trade/escrow/dispute:
     post: 
       tags: 
-       - orders
-       - trade
-       - escrow
        - dispute
+      parameters:
+        - name: order-id
+          description: ID of the order
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       description: "Raise a dispute"
       responses:
         '201':
           description: "Successfully raised a dispute"
     delete:
       tags: 
-        - orders
-        - trade 
-        - escrow
-        - dispute
+        - dispute       
+      parameters:
+        - name: order-id
+          description: ID of the order
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       description: "Succesfully delete the dispute"
       responses:
         '200':
@@ -97,23 +128,27 @@ paths:
   /orders/{order-id}/trade/escrow:
     post: 
       tags:
-        - orders
-        - trade
-        - escrow
+        - escrow      
+      parameters:
+      - name: order-id
+        description: ID of the order
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
       description: "start the escrow"
       responses:
         '201': 
           description: "Successfully started an escrow"
     get: 
       tags:
-        - orders
-        - trade
         - escrow
       description: "get the escrow status"
       parameters:
-        - name: id
+        - name: order-id
+          description: ID of the order
           in: path
-          description: id of the escrow to check the status
           required: true
           schema:
             type: string
@@ -136,18 +171,16 @@ paths:
         
     delete:
       tags:
-        - orders
-        - trade
         - escrow
-      description: "Delete the escrow"
+      description: "Delete the escrow"      
       parameters:
-        - name: id
-          in: path
-          description: id of the escrow to delete
-          required: true
-          schema: 
-            type: string
-            format: uuid
+      - name: order-id
+        description: ID of the order
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
       responses:
         '200':
           description: "return the message of deletion"
