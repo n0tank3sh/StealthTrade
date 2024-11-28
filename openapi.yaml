@@ -1,16 +1,51 @@
 openapi: '3.0.3'
 info:
+  description: "Api specification for the StealthTrade dex"
   title: Stealth Trade api
   version: '0.0.1'
 servers:
   - url: https://StealthTrade.exchange/v1
+tags:
+  - name: token 
+    description: "Methods to handle the access tokens"
+  - name: account
+    description: "Methods to handle the accounts"
+  - name: orders
+    description: "Methods to handle the orders"
+  - name: trade
+    description: "Methods to handle the trade of the order"
+  - name: escrow
+    description: "Methods to handle the escrow of the trade"
+  - name: dispute
+    description: "Methods to handle the dispute of the escrow"
+  - name: swap
+    description: "Methods to handle the swaps"
 
-components:
+components:  
+  securitySchemes:
+    bearerAuth:
+      description: "Bearer token for http authorization"
+      type: http
+      scheme: Bearer
+      bearerFormat: jwt
   schemas:
+    OrderId:
+      description: "id of the order"
+      type: string
+      format: uuid 
+      example: "0801435b-24ec-474c-8a1d-7c3c8b7b25e0"
+    Swap:
+      description: "the data structure to proceed with swap"
+      properties:
+        MoneroAddr:
+          type: string
+        OtherCrypto:
+          type: string
     JSONMessage: 
       type: object
       properties:
         message:
+          example: "Here is the message"
           type: string
     Account:
       type: object
@@ -39,10 +74,10 @@ components:
           maximum: 100
         bid:
           type: boolean
+        swap:
+          type: boolean
         currency:
           type: string
-    OrderId: 
-      type: integer
     OrderArray:
       type: array
       items:
@@ -50,9 +85,105 @@ components:
         properties:
           schema:
             $ref: "#/components/schemas/Order"
-paths:
+
+security:
+- bearerAuth: []
+paths:  
+  /token/generate:
+    post: 
+      tags:
+        - token
+      operationId: generateNewToken
+      security: []
+      description: "generate a token for the user"
+      responses:
+        '201': 
+          description: "succesfully generated a token"
+          content:
+            application/json:
+              schema:
+                properties:
+                  token:
+                    type: string 
+                    example: "s0m3th1ngl1k3th1sw1th30char"
+  /user/profile-picture:
+    get:
+      tags:
+        - user
+      operationId: retrieveProfilePicture
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  url:
+                    type: string
+                    format: url
+  /user/username:
+    get:
+      tags:
+        - user
+      operationId: retrieveUserName
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  schema:
+                    properties:
+                      username:
+                        type: string
+  /orders/{order-id}/swap:
+    post:
+      tags:
+        - swap
+      operationId: createSwap      
+      parameters:
+      - name: order-id
+        description: ID of the order
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/OrderId"      
+      description: "creating swap"
+      responses:
+        '201':
+          description: "successfully created a swap"
+          content:
+            application/json:
+              schema:
+                properties:
+                  schema:
+                    $ref: "#/components/schemas/JSONMessage"
+    delete:
+      tags:
+        - swap
+      operationId: deleteSwap      
+      parameters:
+      - name: order-id
+        description: "ID of the order"
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/OrderId"      
+      description: "creating swap"
+      responses:
+        '201':
+          description: "successfully created a swap"
+          content:
+            application/json:
+              schema:
+                properties:
+                  schema:
+                    $ref: "#/components/schemas/JSONMessage"
+
   /orders/{order-id}/trade:
     post:
+      operationId: createTrade
       tags:
         - trade       
       parameters:
@@ -61,72 +192,72 @@ paths:
         in: path
         required: true
         schema:
-          type: string
-          format: uuid
+          $ref: "#/components/schemas/OrderId"      
       responses:
         '200':
           description: "successfully created a trade"
     get: 
+      operationId: retrieveTrade
       tags:
         - trade      
       parameters:
       - name: order-id
-        description: ID of the order
+        description: "ID of the order"
         in: path
         required: true
         schema:
-          type: string
-          format: uuid
+          $ref: "#/components/schemas/OrderId"      
       responses:
           '200':
             description: "succesfully retrieved a trade"
     delete:
+      operationId: deleteTrade
       tags:
         - trade      
       parameters:
       - name: order-id
-        description: ID of the order
+        description: "ID of the order"
         in: path
         required: true
         schema:
-          type: string
-          format: uuid
+          $ref: "#/components/schemas/OrderId"      
       responses:
           '200':
             description: "succesfully deleted a trade"
   /orders/{order-id}/trade/escrow/dispute:
     post: 
+      operationId: RaiseDispute
       tags: 
        - dispute
       parameters:
         - name: order-id
-          description: ID of the order
+          description: "ID of the order"
           in: path
           required: true
           schema:
-            type: string
-            format: uuid
+            $ref: "#/components/schemas/OrderId"      
       description: "Raise a dispute"
       responses:
         '201':
           description: "Successfully raised a dispute"
     delete:
+      operationId: disolveDispute
       tags: 
         - dispute       
       parameters:
         - name: order-id
-          description: ID of the order
+          description: "ID of the order"
           in: path
           required: true
           schema:
-            type: string
-            format: uuid
+            $ref: "#/components/schemas/OrderId"      
       description: "Succesfully delete the dispute"
       responses:
         '200':
           description: "Succesfully resolved the dispute"
   /orders/{order-id}/trade/escrow:
     post: 
+      operationId: CreateEscrow
       tags:
         - escrow      
       parameters:
@@ -135,13 +266,13 @@ paths:
         in: path
         required: true
         schema:
-          type: string
-          format: uuid
+          $ref: "#/components/schemas/OrderId"      
       description: "start the escrow"
       responses:
         '201': 
           description: "Successfully started an escrow"
     get: 
+      operationId: RetrieveEscrow
       tags:
         - escrow
       description: "get the escrow status"
@@ -151,8 +282,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            format: uuid
+            $ref: "#/components/schemas/OrderId"      
       responses:
         '200': 
           description: "Successfully returning the status of the escrow"
@@ -164,12 +294,17 @@ paths:
                     type: string
         '400':
           description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONMessage"
         '401':
           description: ""
         '404': 
           description: ""
         
     delete:
+      operationId: deleteEscrow
       tags:
         - escrow
       description: "Delete the escrow"      
@@ -194,26 +329,14 @@ paths:
           description: "invalid api key"
         '404': 
           description: "escrow not found"
-  /token/generate:
-    post: 
-      description: "generate a token for the user"
-      responses:
-        '201': 
-          description: "succesfully generated a token"
-          content:
-            application/json:
-              schema:
-                properties:
-                  token:
-                    type: string 
-                    example: "s0m3th1ngl1k3th1sw1th30char"
   /orders:
     get:
+      operationId: retrieveOrderBook
       tags:
         - "orders"
       description: "Get the list of orders"
       parameters:
-        - name: sort
+        - name: field
           in: query
           schema:
             type: string
@@ -239,6 +362,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/OrderArray"
     post:
+      operationId: createNewOrder
       tags:
       - "orders"
       description: "Create an order"
@@ -259,6 +383,7 @@ paths:
                 $ref: "#/components/schemas/JSONMessage"
   /orders/{order-id}:
     get:
+      operationId: retrieveOrder
       tags:
         - "orders"
       description: 'Get the list of the orders'
@@ -268,8 +393,7 @@ paths:
         in: path
         required: true
         schema:
-          type: string
-          format: uuid
+          $ref: "#/components/schemas/OrderId"      
       responses:
         '200':
           description: OK
@@ -278,17 +402,17 @@ paths:
               schema:
                 $ref: "#/components/schemas/Order"
     delete:
+      operationId: deleteOrder
       tags:
         - "orders"
       description: "Delete the order with id"
       parameters:
         - name: order-id
-          description: ID of the order
+          description: "ID of the order"
           in: path
           required: true
           schema:
-            type: string
-            format: uuid
+            $ref: "#/components/schemas/OrderId"      
       responses:
         "200": 
           description: Sucessfully deleted the object with the uuid

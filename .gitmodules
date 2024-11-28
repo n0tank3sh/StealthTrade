@@ -1,0 +1,3 @@
+[submodule "modules/xmr-btc-swap"]
+	path = modules/xmr-btc-swap
+	url = https://github.com/comit-network/xmr-btc-swap.git
